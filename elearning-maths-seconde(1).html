@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MathBoost – Révisions Seconde</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f14;
+    --surface: #17171f;
+    --card: #1e1e28;
+    --border: #2a2a38;
+    --accent: #7c6af7;
+    --accent2: #f7a26a;
+    --accent3: #6af7c8;
+    --text: #e8e8f0;
+    --muted: #8888a0;
+    --success: #4ade80;
+    --error: #f87171;
+    --locked: #2a2a38;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { height:100%; background:var(--bg); color:var(--text); font-family:'DM Sans', sans-serif; }
+  
+  /* ---- LAYOUT ---- */
+  .app { min-height:100vh; display:flex; flex-direction:column; }
+  
+  /* ---- HEADER ---- */
+  header {
+    padding:1.5rem 1.5rem 1rem;
+    display:flex; align-items:center; gap:0.8rem;
+  }
+  .logo-icon {
+    width:40px; height:40px; border-radius:12px;
+    background:linear-gradient(135deg, var(--accent), var(--accent2));
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Syne',sans-serif; font-weight:800; font-size:1.1rem; color:#fff;
+    flex-shrink:0;
+  }
+  .logo-text { font-family:'Syne',sans-serif; font-weight:700; font-size:1.15rem; }
+  .logo-sub { font-size:0.7rem; color:var(--muted); letter-spacing:0.05em; text-transform:uppercase; }
+
+  /* ---- HOME SCREEN ---- */
+  #home { flex:1; padding:0 1.2rem 2rem; }
+  .hero-card {
+    background:linear-gradient(135deg, #1e1b3a, #1a2a2a);
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:1.5rem;
+    margin-bottom:1.5rem;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero-card::before {
+    content:'';
+    position:absolute; top:-40px; right:-40px;
+    width:140px; height:140px;
+    background:radial-gradient(circle, rgba(124,106,247,0.3) 0%, transparent 70%);
+    border-radius:50%;
+  }
+  .hero-card h2 { font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:700; margin-bottom:0.4rem; }
+  .hero-card p { font-size:0.85rem; color:var(--muted); line-height:1.5; }
+  .topics {
+    display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.8rem;
+  }
+  .topic-tag {
+    font-size:0.7rem; padding:0.3rem 0.7rem; border-radius:20px;
+    border:1px solid var(--border); color:var(--muted);
+    font-family:'Syne',sans-serif; font-weight:600; letter-spacing:0.03em;
+  }
+  .topic-tag.active { border-color:var(--accent); color:var(--accent); }
+
+  .section-label {
+    font-family:'Syne',sans-serif; font-size:0.7rem; font-weight:700;
+    color:var(--muted); text-transform:uppercase; letter-spacing:0.1em;
+    margin-bottom:0.8rem;
+  }
+  
+  /* ---- DAY CARDS ---- */
+  .days-grid { display:flex; flex-direction:column; gap:0.8rem; }
+  .day-card {
+    background:var(--card); border:1px solid var(--border);
+    border-radius:16px; padding:1.1rem 1.2rem;
+    display:flex; align-items:center; gap:1rem;
+    cursor:pointer; transition:all 0.2s;
+    position:relative; overflow:hidden;
+  }
+  .day-card.unlocked:hover { border-color:var(--accent); transform:translateY(-1px); }
+  .day-card.locked { opacity:0.4; cursor:not-allowed; }
+  .day-card.done { border-color:rgba(74,222,128,0.3); }
+  .day-card.done::before {
+    content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+    background:var(--success); border-radius:3px 0 0 3px;
+  }
+  .day-card.active-day { border-color:var(--accent); }
+  .day-card.active-day::before {
+    content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+    background:var(--accent); border-radius:3px 0 0 3px;
+  }
+
+  .day-icon {
+    width:44px; height:44px; border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.3rem; flex-shrink:0;
+  }
+  .day-icon.c-purple { background:rgba(124,106,247,0.15); }
+  .day-icon.c-orange { background:rgba(247,162,106,0.15); }
+  .day-icon.c-teal { background:rgba(106,247,200,0.15); }
+
+  .day-info { flex:1; }
+  .day-name { font-family:'Syne',sans-serif; font-size:0.95rem; font-weight:700; }
+  .day-theme { font-size:0.78rem; color:var(--muted); margin-top:0.1rem; }
+  .day-status {
+    font-size:0.7rem; padding:0.25rem 0.6rem; border-radius:10px;
+    font-weight:500;
+  }
+  .status-done { background:rgba(74,222,128,0.15); color:var(--success); }
+  .status-next { background:rgba(124,106,247,0.15); color:var(--accent); }
+  .status-locked { background:var(--locked); color:var(--muted); }
+
+  /* ---- SESSION SCREEN ---- */
+  #session { display:none; flex:1; flex-direction:column; }
+  .session-header {
+    padding:1.2rem 1.5rem;
+    display:flex; align-items:center; gap:0.8rem;
+    border-bottom:1px solid var(--border);
+  }
+  .back-btn {
+    width:36px; height:36px; border-radius:10px;
+    background:var(--card); border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; color:var(--text); font-size:1.1rem;
+    transition:all 0.15s; flex-shrink:0;
+  }
+  .back-btn:hover { border-color:var(--accent); }
+  .session-title { font-family:'Syne',sans-serif; font-weight:700; font-size:1rem; }
+  .session-day { font-size:0.75rem; color:var(--muted); }
+
+  /* Progress bar */
+  .progress-wrap { padding:0.8rem 1.5rem 0; }
+  .progress-info { display:flex; justify-content:space-between; font-size:0.72rem; color:var(--muted); margin-bottom:0.4rem; }
+  .progress-bar { height:4px; background:var(--border); border-radius:4px; overflow:hidden; }
+  .progress-fill { height:100%; background:linear-gradient(90deg, var(--accent), var(--accent2)); border-radius:4px; transition:width 0.4s ease; }
+
+  /* Question area */
+  .question-area { flex:1; padding:1.2rem 1.5rem; overflow-y:auto; }
+  
+  /* Rappel */
+  .reminder-card {
+    background:rgba(124,106,247,0.08); border:1px solid rgba(124,106,247,0.25);
+    border-radius:14px; padding:1rem 1.2rem; margin-bottom:1.2rem;
+  }
+  .reminder-label { font-size:0.65rem; color:var(--accent); font-weight:700; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.5rem; }
+  .reminder-card p { font-size:0.85rem; line-height:1.6; }
+  .reminder-card strong { color:var(--accent2); }
+
+  /* Question card */
+  .q-card {
+    background:var(--card); border:1px solid var(--border);
+    border-radius:16px; padding:1.2rem;
+    animation:slideIn 0.3s ease;
+  }
+  @keyframes slideIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+  
+  .q-number { font-size:0.65rem; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.6rem; }
+  .q-text { font-size:1rem; line-height:1.6; margin-bottom:1.2rem; }
+  .q-text .expr { 
+    font-family:'Syne',sans-serif; font-weight:700; font-size:1.1rem;
+    color:var(--accent2); display:inline-block;
+    background:rgba(247,162,106,0.1); padding:0.1rem 0.4rem; border-radius:6px;
+  }
+
+  /* Options */
+  .options { display:flex; flex-direction:column; gap:0.6rem; }
+  .option-btn {
+    background:var(--surface); border:1.5px solid var(--border);
+    border-radius:12px; padding:0.85rem 1rem;
+    font-family:'DM Sans',sans-serif; font-size:0.9rem; color:var(--text);
+    text-align:left; cursor:pointer; transition:all 0.15s;
+    display:flex; align-items:center; gap:0.7rem;
+  }
+  .option-btn:hover:not(:disabled) { border-color:var(--accent); background:rgba(124,106,247,0.08); }
+  .option-btn .opt-letter {
+    width:26px; height:26px; border-radius:8px;
+    background:var(--border); display:flex; align-items:center; justify-content:center;
+    font-size:0.7rem; font-weight:700; font-family:'Syne',sans-serif;
+    flex-shrink:0; transition:all 0.15s;
+  }
+  .option-btn.correct { border-color:var(--success); background:rgba(74,222,128,0.08); }
+  .option-btn.correct .opt-letter { background:var(--success); color:#000; }
+  .option-btn.wrong { border-color:var(--error); background:rgba(248,113,113,0.08); }
+  .option-btn.wrong .opt-letter { background:var(--error); color:#000; }
+  .option-btn:disabled { cursor:default; }
+
+  /* Feedback */
+  .feedback-box {
+    margin-top:1rem; padding:0.9rem 1rem; border-radius:12px;
+    font-size:0.85rem; line-height:1.5; display:none;
+  }
+  .feedback-box.show { display:block; animation:slideIn 0.2s ease; }
+  .feedback-box.ok { background:rgba(74,222,128,0.1); border:1px solid rgba(74,222,128,0.3); color:var(--success); }
+  .feedback-box.ko { background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.3); color:var(--error); }
+  .feedback-box p { margin-bottom:0.2rem; }
+  .feedback-box .expl { color:var(--text); font-size:0.8rem; margin-top:0.4rem; }
+
+  /* Next btn */
+  .next-btn {
+    display:none; margin-top:1rem; width:100%;
+    background:linear-gradient(135deg, var(--accent), #9b8af9);
+    border:none; border-radius:12px; padding:0.9rem;
+    font-family:'Syne',sans-serif; font-weight:700; font-size:0.95rem;
+    color:#fff; cursor:pointer; transition:opacity 0.15s;
+  }
+  .next-btn:hover { opacity:0.9; }
+  .next-btn.show { display:block; animation:slideIn 0.2s ease; }
+
+  /* ---- RESULTS SCREEN ---- */
+  #results { display:none; flex:1; flex-direction:column; align-items:center; justify-content:center; padding:2rem 1.5rem; text-align:center; }
+  .results-emoji { font-size:4rem; margin-bottom:1rem; }
+  .results-title { font-family:'Syne',sans-serif; font-size:1.6rem; font-weight:800; margin-bottom:0.5rem; }
+  .results-score { font-size:3rem; font-family:'Syne',sans-serif; font-weight:800; color:var(--accent2); margin:0.5rem 0; }
+  .results-sub { font-size:0.9rem; color:var(--muted); margin-bottom:2rem; line-height:1.5; }
+  .results-errors { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:1.2rem; width:100%; max-width:400px; text-align:left; margin-bottom:1.5rem; }
+  .results-errors h3 { font-family:'Syne',sans-serif; font-size:0.85rem; font-weight:700; margin-bottom:0.8rem; color:var(--muted); }
+  .error-item { font-size:0.8rem; padding:0.5rem 0; border-bottom:1px solid var(--border); line-height:1.4; }
+  .error-item:last-child { border-bottom:none; }
+  .error-item .wrong-ans { color:var(--error); }
+  .error-item .right-ans { color:var(--success); }
+  .home-btn {
+    background:var(--card); border:1px solid var(--border);
+    border-radius:12px; padding:0.8rem 2rem;
+    font-family:'Syne',sans-serif; font-weight:700; font-size:0.9rem;
+    color:var(--text); cursor:pointer; transition:all 0.15s;
+  }
+  .home-btn:hover { border-color:var(--accent); color:var(--accent); }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo-icon">M²</div>
+    <div>
+      <div class="logo-text">MathBoost</div>
+      <div class="logo-sub">Révisions Seconde</div>
+    </div>
+  </header>
+
+  <!-- HOME -->
+  <div id="home">
+    <div class="hero-card">
+      <h2>Automatismes de la semaine</h2>
+      <p>10 minutes par jour, depuis ton canapé. Pas de stylo nécessaire.</p>
+      <div class="topics">
+        <span class="topic-tag active">Inéquations</span>
+        <span class="topic-tag active">Changement de signe</span>
+        <span class="topic-tag active">Distributivité</span>
+        <span class="topic-tag active">Double distributivité</span>
+      </div>
+    </div>
+    <div class="section-label">Programme de la semaine</div>
+    <div class="days-grid" id="daysGrid"></div>
+  </div>
+
+  <!-- SESSION -->
+  <div id="session" style="display:none; flex-direction:column; flex:1;">
+    <div class="session-header">
+      <div class="back-btn" onclick="goHome()">←</div>
+      <div>
+        <div class="session-title" id="sessionTitle"></div>
+        <div class="session-day" id="sessionDay"></div>
+      </div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-info">
+        <span id="progressText">Question 1 / 8</span>
+        <span id="progressPct">0%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    </div>
+    <div class="question-area" id="questionArea"></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results" style="display:none; flex-direction:column; flex:1; align-items:center; justify-content:center; padding:2rem 1.5rem; text-align:center;">
+    <div class="results-emoji" id="resultsEmoji"></div>
+    <div class="results-title" id="resultsTitle"></div>
+    <div class="results-score" id="resultsScore"></div>
+    <div class="results-sub" id="resultsSub"></div>
+    <div class="results-errors" id="resultsErrors" style="display:none;"></div>
+    <button class="home-btn" onclick="goHome()">← Retour au programme</button>
+  </div>
+</div>
+
+<script>
+// ==================== DATA ====================
+const DAYS = [
+  {
+    id: 0, name: "Dimanche", emoji: "🔢",
+    theme: "Inéquations – Vrai / Faux & QCM de base",
+    colorClass: "c-purple",
+    reminder: `Règle clé : quand on <strong>multiplie ou divise</strong> les deux membres d'une inéquation par un nombre <strong>négatif</strong>, le sens du signe change.<br>Ex : −2x > 6 → on divise par −2 → x <strong>&lt;</strong> −3`,
+    questions: [
+      { q: "Vrai ou faux : pour résoudre −3x > 9, on divise par −3 et le signe > s'inverse en <.", opts:["Vrai","Faux"], correct:0, expl:"En divisant par un nombre négatif, l'inégalité > devient <. Donc on obtient x < −3." },
+      { q: "On a l'inéquation : <span class='expr'>−2x > 8</span>. Après division par −2, quel est le bon résultat ?", opts:["x > −4","x < −4","x > 4","x < 4"], correct:1, expl:"On divise par −2 (négatif), donc le signe s'inverse : x < −4." },
+      { q: "Vrai ou faux : pour résoudre 5x > −15, on divise par 5 et le signe ne change pas.", opts:["Vrai","Faux"], correct:0, expl:"5 est positif, donc le signe reste identique. On obtient x > −3." },
+      { q: "Quelle étape contient l'erreur ?\n1) −4x < 12\n2) x < 12 ÷ (−4)\n3) x < −3", opts:["Étape 2 : division par −4 sans inverser le signe","Étape 3 : le résultat numérique","Aucune erreur, tout est juste","Étape 1 : le signe de départ"], correct:0, expl:"Quand on divise par −4 (négatif), le signe < doit devenir >. La bonne réponse est x > −3." },
+      { q: "On a : <span class='expr'>x/−5 ≤ 2</span>. On multiplie par −5. Quel est le résultat correct ?", opts:["x ≤ −10","x ≥ −10","x ≤ 10","x ≥ 10"], correct:1, expl:"On multiplie par −5 (négatif), donc ≤ devient ≥. x ≥ −10." },
+      { q: "Vrai ou faux : multiplier les deux membres par −1 ne change pas le sens de l'inégalité.", opts:["Vrai","Faux"], correct:1, expl:"Multiplier par −1 (négatif) inverse toujours le sens de l'inégalité." },
+      { q: "On cherche x dans : <span class='expr'>−x > 3</span>. Que trouve-t-on ?", opts:["x > −3","x < −3","x > 3","x < 3"], correct:1, expl:"On multiplie par −1 des deux côtés → le signe s'inverse → x < −3." },
+      { q: "Vrai ou faux : 2x > −6 donne x > −3, sans changer le signe.", opts:["Vrai","Faux"], correct:0, expl:"On divise par 2 (positif), le signe ne change pas. x > −3. Correct !" },
+    ]
+  },
+  {
+    id: 1, name: "Lundi", emoji: "🔍",
+    theme: "Inéquations – Trouve l'erreur & résolution guidée",
+    colorClass: "c-purple",
+    reminder: `Méthode de résolution :<br>1) Isoler les termes en x d'un côté<br>2) Si on × ou ÷ par un <strong>nombre négatif</strong> → inverser le signe<br>3) Vérifier avec une valeur test`,
+    questions: [
+      { q: "Résolution de −3x + 6 > 0 :\nÉtape A : −3x > −6\nÉtape B : x > 2\nOù est l'erreur ?", opts:["Étape A (la soustraction de 6)","Étape B (le signe n'a pas été inversé)","Il n'y a pas d'erreur","Les deux étapes sont fausses"], correct:1, expl:"En divisant par −3 (négatif), > devient <. La bonne réponse est x < 2." },
+      { q: "On résout <span class='expr'>4 − 2x ≥ 10</span>. L'étape 1 donne −2x ≥ 6. L'étape 2 donne :", opts:["x ≥ −3","x ≤ −3","x ≥ 3","x ≤ 3"], correct:1, expl:"On divise par −2 (négatif) : ≥ devient ≤, et 6÷(−2) = −3. Donc x ≤ −3." },
+      { q: "Parmi ces 4 résolutions, laquelle est correcte pour −5x < 20 ?", opts:["x < −4","x > −4","x < 4","x > 4"], correct:1, expl:"On divise par −5 < 0, donc < devient >. 20÷(−5) = −4. x > −4." },
+      { q: "On a <span class='expr'>−x/2 > 3</span>. On multiplie par −2. Résultat ?", opts:["x > −6","x < −6","x > 6","x < 6"], correct:1, expl:"On multiplie par −2 (négatif), donc > devient <. −2 × 3 = −6. x < −6." },
+      { q: "Vrai ou faux : pour 3 − x > 5, on obtient −x > 2, puis x < −2.", opts:["Vrai","Faux"], correct:0, expl:"Oui ! 3 − x > 5 → −x > 2 → on multiplie par −1 → x < −2. Correct !" },
+      { q: "Une élève écrit : −2x + 4 < 8 → −2x < 4 → x < −2. Que penses-tu ?", opts:["C'est correct","Le signe final est inversé","L'erreur est à la première étape","Le calcul numérique est faux"], correct:1, expl:"Quand on divise par −2, < devient >. La bonne réponse est x > −2." },
+      { q: "On résout <span class='expr'>−6x ≤ −12</span>. Le résultat est :", opts:["x ≤ 2","x ≥ 2","x ≤ −2","x ≥ −2"], correct:1, expl:"On divise par −6 (négatif) → ≤ devient ≥. −12 ÷ (−6) = 2. Donc x ≥ 2." },
+      { q: "Vrai ou faux : multiplier par un nombre négatif change aussi les valeurs numériques (avec changement de signe).", opts:["Vrai","Faux"], correct:0, expl:"Oui ! Par exemple −2 × 3 = −6. Le nombre change de signe, et l'inégalité s'inverse aussi." },
+    ]
+  },
+  {
+    id: 2, name: "Mardi", emoji: "✖️",
+    theme: "Distributivité simple – Développer sans se tromper",
+    colorClass: "c-orange",
+    reminder: `Distributivité : <strong>a(b + c) = ab + ac</strong><br>Attention au signe devant la parenthèse !<br>Ex : −3(x − 4) = −3×x − (−3×4) = <strong>−3x + 12</strong>`,
+    questions: [
+      { q: "Développe : <span class='expr'>2(x + 5)</span>", opts:["2x + 5","2x + 10","x + 10","2x − 10"], correct:1, expl:"2×x = 2x et 2×5 = 10. Donc 2(x+5) = 2x + 10." },
+      { q: "Vrai ou faux : −3(x + 2) = −3x + 6", opts:["Vrai","Faux"], correct:1, expl:"−3×x = −3x et −3×2 = −6 (pas +6). Donc −3(x+2) = −3x − 6." },
+      { q: "Développe : <span class='expr'>−2(x − 4)</span>", opts:["−2x − 8","−2x + 8","2x − 8","−2x + 4"], correct:1, expl:"−2×x = −2x et −2×(−4) = +8. Donc −2(x−4) = −2x + 8." },
+      { q: "Développe : <span class='expr'>4(3x − 1)</span>", opts:["12x − 4","12x − 1","4x − 4","12x + 4"], correct:0, expl:"4×3x = 12x et 4×(−1) = −4. Donc 4(3x−1) = 12x − 4." },
+      { q: "Vrai ou faux : −(x − 5) = −x − 5", opts:["Vrai","Faux"], correct:1, expl:"−(x−5) = −1×x + (−1)×(−5) = −x + 5. Le signe de −5 s'inverse !" },
+      { q: "Développe et réduis : <span class='expr'>3(x + 2) + 4</span>", opts:["3x + 10","3x + 6","3x + 14","7x + 2"], correct:0, expl:"3×x = 3x, 3×2 = 6, puis +4. Total : 3x + 6 + 4 = 3x + 10." },
+      { q: "Développe : <span class='expr'>−5(2x − 3)</span>", opts:["−10x − 15","−10x + 15","10x − 15","−10x + 3"], correct:1, expl:"−5×2x = −10x et −5×(−3) = +15. Donc −5(2x−3) = −10x + 15." },
+      { q: "Quelle égalité est FAUSSE ?", opts:["2(x+3) = 2x+6","−4(x−1) = −4x+4","3(2x+1) = 6x+1","−(2x−5) = −2x+5"], correct:2, expl:"3(2x+1) = 3×2x + 3×1 = 6x + 3, pas 6x + 1. Les autres sont correctes." },
+    ]
+  },
+  {
+    id: 3, name: "Mercredi", emoji: "🧮",
+    theme: "Distributivité simple – Identifier & compléter",
+    colorClass: "c-orange",
+    reminder: `Pour factoriser (opération inverse), on cherche le <strong>facteur commun</strong>.<br>Pour développer, on distribue chaque terme.<br>Rappel : a(b−c) = ab − ac`,
+    questions: [
+      { q: "Quel est le développement de <span class='expr'>−(3x − 7)</span> ?", opts:["−3x − 7","3x − 7","−3x + 7","3x + 7"], correct:2, expl:"−1×3x = −3x et −1×(−7) = +7. Résultat : −3x + 7." },
+      { q: "Développe et réduis : <span class='expr'>2(x − 3) − 5</span>", opts:["2x − 11","2x − 1","2x − 8","2x + 1"], correct:0, expl:"2x − 6 − 5 = 2x − 11." },
+      { q: "Vrai ou faux : 5(x + 1) − 3(x + 1) = 2(x + 1) = 2x + 2", opts:["Vrai","Faux"], correct:0, expl:"(5−3)(x+1) = 2(x+1) = 2x+2. Oui, c'est correct !" },
+      { q: "Le terme manquant : 3(2x + ?) = 6x + 9. Le ? est :", opts:["3","6","9","2"], correct:0, expl:"3×2x = 6x et 3×? = 9 donc ? = 3. Réponse : 3(2x+3) = 6x+9." },
+      { q: "Développe et réduis : <span class='expr'>4(x + 1) + 2(x − 3)</span>", opts:["6x − 2","6x + 10","6x − 10","4x − 2"], correct:0, expl:"4x + 4 + 2x − 6 = 6x − 2." },
+      { q: "Vrai ou faux : −2(x + 4) + 8 = −2x", opts:["Vrai","Faux"], correct:0, expl:"−2x − 8 + 8 = −2x. Oui !" },
+      { q: "Développe : <span class='expr'>x(x + 3)</span>", opts:["x² + 3","x² + 3x","x + 3x","2x + 3"], correct:1, expl:"x×x = x² et x×3 = 3x. Donc x(x+3) = x² + 3x." },
+      { q: "Terme manquant : −3(? − 2) = −3x + 6", opts:["x","−x","2x","−2x"], correct:0, expl:"−3×x = −3x et −3×(−2) = +6. Donc le terme manquant est x." },
+    ]
+  },
+  {
+    id: 4, name: "Jeudi", emoji: "🔀",
+    theme: "Double distributivité (x+a)(x+b)",
+    colorClass: "c-teal",
+    reminder: `<strong>(a + b)(c + d) = ac + ad + bc + bd</strong><br>4 produits à calculer !<br>Ex : (x+2)(x+3) = x²+3x+2x+6 = <strong>x²+5x+6</strong>`,
+    questions: [
+      { q: "Quels sont les 4 produits de <span class='expr'>(x+1)(x+4)</span> ?", opts:["x², 4x, x, 4","x², x, 4x, 4 ✓","x², 4, x, 1","2x, 4x, x, 4"], correct:1, expl:"x×x=x², x×4=4x, 1×x=x, 1×4=4. On additionne : x²+5x+4." },
+      { q: "Développe : <span class='expr'>(x+2)(x+3)</span>", opts:["x² + 5x + 6","x² + 6x + 5","x² + 6x + 6","x² + 5x + 5"], correct:0, expl:"x²+3x+2x+6 = x²+5x+6." },
+      { q: "Le terme en x dans <span class='expr'>(x+1)(x+4)</span> est :", opts:["4x","5x","x","6x"], correct:1, expl:"x×4 + 1×x = 4x + x = 5x." },
+      { q: "Vrai ou faux : (x+3)² = x² + 9", opts:["Vrai","Faux"], correct:1, expl:"(x+3)² = (x+3)(x+3) = x²+3x+3x+9 = x²+6x+9. Il manque le terme 6x !" },
+      { q: "Développe : <span class='expr'>(x − 2)(x + 5)</span>", opts:["x² + 3x − 10","x² − 3x − 10","x² + 7x − 10","x² + 3x + 10"], correct:0, expl:"x²+5x−2x−10 = x²+3x−10." },
+      { q: "Le terme constant dans <span class='expr'>(x − 3)(x − 4)</span> est :", opts:["−12","12","−7","7"], correct:1, expl:"(−3)×(−4) = +12. Le terme constant est 12." },
+      { q: "Développe : <span class='expr'>(x + 1)(x − 1)</span>", opts:["x² − 1","x² + 1","x² − 2x − 1","x² + 2x − 1"], correct:0, expl:"x²−x+x−1 = x²−1. (Identité remarquable : (a+b)(a−b) = a²−b².)" },
+      { q: "Vrai ou faux : (x+2)(x+4) = x² + 6x + 8", opts:["Vrai","Faux"], correct:0, expl:"x²+4x+2x+8 = x²+6x+8. Correct !" },
+    ]
+  },
+  {
+    id: 5, name: "Vendredi", emoji: "🏆",
+    theme: "Session bilan – Les 3 thèmes mélangés",
+    colorClass: "c-teal",
+    reminder: `Rappels express :<br>• Inéquation × ou ÷ par négatif → <strong>signe inversé</strong><br>• Distributivité : <strong>a(b+c) = ab+ac</strong><br>• Double dist. : <strong>(a+b)(c+d) = ac+ad+bc+bd</strong>`,
+    questions: [
+      { q: "On résout <span class='expr'>−4x > 20</span>. Résultat ?", opts:["x > −5","x < −5","x > 5","x < 5"], correct:1, expl:"On divise par −4 (négatif) : > devient <. 20÷(−4) = −5. x < −5." },
+      { q: "Développe : <span class='expr'>−3(2x − 5)</span>", opts:["−6x − 15","−6x + 15","6x − 15","6x + 15"], correct:1, expl:"−3×2x = −6x et −3×(−5) = +15. Résultat : −6x + 15." },
+      { q: "Développe : <span class='expr'>(x + 3)(x − 2)</span>", opts:["x² − x − 6","x² + x − 6","x² − x + 6","x² + x + 6"], correct:1, expl:"x²−2x+3x−6 = x²+x−6." },
+      { q: "Vrai ou faux : pour −x/3 ≤ 1, on multiplie par −3 et on obtient x ≥ −3.", opts:["Vrai","Faux"], correct:0, expl:"On multiplie par −3 (négatif) → ≤ devient ≥. −3×1 = −3. x ≥ −3. Correct !" },
+      { q: "Développe et réduis : <span class='expr'>2(x + 4) − (x − 1)</span>", opts:["x + 9","x + 7","3x + 9","x − 7"], correct:0, expl:"2x+8−x+1 = x+9. Attention : −(x−1) = −x+1 (pas −1)." },
+      { q: "Terme du milieu dans <span class='expr'>(x + 5)(x + 2)</span> ?", opts:["5x","7x","10x","2x"], correct:1, expl:"5x + 2x = 7x. Résultat complet : x²+7x+10." },
+      { q: "On a −2x + 5 < 1. Après −2x < −4, on obtient :", opts:["x < 2","x > 2","x < −2","x > −2"], correct:1, expl:"On divise par −2 (négatif) → < devient >. −4÷(−2) = 2. x > 2." },
+      { q: "Laquelle est VRAIE ?", opts:["(x+1)² = x²+1","−2(x−3) = −2x−6","(x+2)(x−2) = x²−4","3(x+4) = 3x+7"], correct:2, expl:"(x+2)(x−2) = x²−2x+2x−4 = x²−4. Identité remarquable !" },
+    ]
+  }
+];
+
+// ==================== STATE ====================
+const SAVE_KEY = "mathboost_progress";
+
+async function loadState() {
+  try {
+    const result = await window.storage.get(SAVE_KEY);
+    if (result && result.value) return JSON.parse(result.value);
+  } catch(e) {}
+  return { completed: [], scores: {} };
+}
+
+async function saveState(st) {
+  try { await window.storage.set(SAVE_KEY, JSON.stringify(st)); } catch(e) {}
+}
+
+let state = { completed: [], scores: {} };
+let currentDay = null;
+let currentQ = 0;
+let score = 0;
+let errors = [];
+let answered = false;
+
+// ==================== HOME ====================
+function renderHome() {
+  const grid = document.getElementById("daysGrid");
+  grid.innerHTML = "";
+  
+  DAYS.forEach((day, i) => {
+    const done = state.completed.includes(i);
+    const locked = i > 0 && !state.completed.includes(i-1);
+    const isNext = !done && !locked;
+    
+    const card = document.createElement("div");
+    card.className = `day-card ${done ? 'done' : ''} ${locked ? 'locked' : 'unlocked'} ${isNext ? 'active-day' : ''}`;
+    
+    let statusHtml = "";
+    if (done) statusHtml = `<span class="day-status status-done">✓ Terminé ${state.scores[i] !== undefined ? state.scores[i]+'/8' : ''}</span>`;
+    else if (isNext) statusHtml = `<span class="day-status status-next">→ À faire</span>`;
+    else statusHtml = `<span class="day-status status-locked">🔒</span>`;
+    
+    card.innerHTML = `
+      <div class="day-icon ${day.colorClass}">${day.emoji}</div>
+      <div class="day-info">
+        <div class="day-name">${day.name}</div>
+        <div class="day-theme">${day.theme}</div>
+      </div>
+      ${statusHtml}
+    `;
+    
+    if (!locked) card.onclick = () => startSession(i);
+    grid.appendChild(card);
+  });
+  
+  document.getElementById("home").style.display = "block";
+  document.getElementById("session").style.display = "none";
+  document.getElementById("results").style.display = "none";
+}
+
+// ==================== SESSION ====================
+function startSession(dayIndex) {
+  currentDay = dayIndex;
+  currentQ = 0;
+  score = 0;
+  errors = [];
+  answered = false;
+  
+  const day = DAYS[dayIndex];
+  document.getElementById("sessionTitle").textContent = day.theme;
+  document.getElementById("sessionDay").textContent = `Session ${day.name}`;
+  
+  document.getElementById("home").style.display = "none";
+  document.getElementById("results").style.display = "none";
+  const sess = document.getElementById("session");
+  sess.style.display = "flex";
+  
+  showQuestion();
+}
+
+function showQuestion() {
+  const day = DAYS[currentDay];
+  const total = day.questions.length;
+  
+  document.getElementById("progressText").textContent = `Question ${currentQ + 1} / ${total}`;
+  const pct = Math.round((currentQ / total) * 100);
+  document.getElementById("progressPct").textContent = pct + "%";
+  document.getElementById("progressFill").style.width = pct + "%";
+  
+  const q = day.questions[currentQ];
+  answered = false;
+  
+  let optsHtml = q.opts.map((o, i) => {
+    const letters = ["A","B","C","D"];
+    return `<button class="option-btn" onclick="answer(${i})" id="opt${i}">
+      <span class="opt-letter">${letters[i]}</span>
+      <span>${o}</span>
+    </button>`;
+  }).join("");
+  
+  const area = document.getElementById("questionArea");
+  area.innerHTML = `
+    <div class="reminder-card" style="margin-bottom:1rem;">
+      <div class="reminder-label">💡 Rappel de la session</div>
+      <p>${day.reminder}</p>
+    </div>
+    <div class="q-card">
+      <div class="q-number">Question ${currentQ + 1} sur ${day.questions.length}</div>
+      <div class="q-text">${q.q.replace(/\n/g,'<br>')}</div>
+      <div class="options">${optsHtml}</div>
+      <div class="feedback-box" id="feedback"></div>
+      <button class="next-btn" id="nextBtn" onclick="nextQuestion()">
+        ${currentQ < day.questions.length - 1 ? 'Question suivante →' : 'Voir mes résultats 🏆'}
+      </button>
+    </div>
+  `;
+  area.scrollTop = 0;
+}
+
+function answer(idx) {
+  if (answered) return;
+  answered = true;
+  
+  const q = DAYS[currentDay].questions[currentQ];
+  const correct = q.correct;
+  const isRight = idx === correct;
+  
+  q.opts.forEach((_, i) => {
+    const btn = document.getElementById("opt" + i);
+    btn.disabled = true;
+    if (i === correct) btn.classList.add("correct");
+    else if (i === idx && !isRight) btn.classList.add("wrong");
+  });
+  
+  const feedback = document.getElementById("feedback");
+  feedback.className = "feedback-box show " + (isRight ? "ok" : "ko");
+  feedback.innerHTML = `
+    <p>${isRight ? "✅ Bonne réponse !" : "❌ Pas tout à fait..."}</p>
+    <p class="expl">${q.expl}</p>
+  `;
+  
+  if (isRight) score++;
+  else errors.push({ qText: q.q.replace(/<[^>]*>/g,'').replace(/\n/g,' '), yourAns: q.opts[idx], rightAns: q.opts[correct] });
+  
+  const nextBtn = document.getElementById("nextBtn");
+  nextBtn.className = "next-btn show";
+}
+
+function nextQuestion() {
+  currentQ++;
+  if (currentQ >= DAYS[currentDay].questions.length) {
+    finishSession();
+  } else {
+    showQuestion();
+  }
+}
+
+// ==================== RESULTS ====================
+function finishSession() {
+  const total = DAYS[currentDay].questions.length;
+  const pct = Math.round((score / total) * 100);
+  
+  // Save progress
+  if (!state.completed.includes(currentDay)) {
+    state.completed.push(currentDay);
+  }
+  state.scores[currentDay] = score;
+  saveState(state);
+  
+  // Display
+  const div = document.getElementById("results");
+  document.getElementById("home").style.display = "none";
+  document.getElementById("session").style.display = "none";
+  div.style.display = "flex";
+  
+  let emoji, title, sub;
+  if (pct === 100) { emoji="🏆"; title="Parfait !"; sub="Tu maîtrises parfaitement ce thème. Continue comme ça !"; }
+  else if (pct >= 75) { emoji="💪"; title="Très bien !"; sub="Quelques petites erreurs, mais tu as bien compris l'essentiel."; }
+  else if (pct >= 50) { emoji="📚"; title="Pas mal !"; sub="Tu progresses. Relis les explications ci-dessous et ça viendra."; }
+  else { emoji="🔄"; title="Continue !"; sub="Relis bien les rappels et n'hésite pas à refaire la session demain."; }
+  
+  document.getElementById("resultsEmoji").textContent = emoji;
+  document.getElementById("resultsTitle").textContent = title;
+  document.getElementById("resultsScore").textContent = `${score} / ${total}`;
+  document.getElementById("resultsSub").textContent = sub;
+  
+  const errBox = document.getElementById("resultsErrors");
+  if (errors.length > 0) {
+    errBox.style.display = "block";
+    errBox.innerHTML = `<h3>📌 Points à retravailler</h3>` + 
+      errors.map(e => `<div class="error-item">
+        <div>${e.qText.substring(0,60)}${e.qText.length>60?'...':''}</div>
+        <div>Ta réponse : <span class="wrong-ans">${e.yourAns}</span></div>
+        <div>Bonne réponse : <span class="right-ans">${e.rightAns}</span></div>
+      </div>`).join("");
+  } else {
+    errBox.style.display = "none";
+  }
+}
+
+// ==================== NAVIGATION ====================
+function goHome() {
+  currentDay = null;
+  renderHome();
+}
+
+// ==================== INIT ====================
+(async () => {
+  state = await loadState();
+  renderHome();
+})();
+</script>
+</body>
+</html>
